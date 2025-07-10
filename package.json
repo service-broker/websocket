@@ -1,6 +1,6 @@
 {
   "name": "@service-broker/websocket",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A WebSocket connection wrapper that exposes events as RxJS observables, allowing for idiomatic management of connection lifecycle",
   "keywords": [
     "websocket",

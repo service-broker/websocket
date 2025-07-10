@@ -33,3 +33,4 @@ function makeConnection(ws, request) {
         }), rxjs.takeUntil(close$))
     };
 }
+//# sourceMappingURL=index.js.map
