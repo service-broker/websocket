@@ -1,6 +1,6 @@
 {
   "name": "@service-broker/websocket",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A WebSocket connection wrapper that exposes events as RxJS observables, allowing for idiomatic management of connection lifecycle",
   "keywords": [
     "websocket",
@@ -38,10 +38,10 @@
   "devDependencies": {
     "@service-broker/test-utils": "^1.0.2",
     "@types/node": "^24.0.12",
-    "@types/ws": "^8.18.1",
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@types/ws": "^8.18.1",
     "rxjs": "^7.8.2",
     "ws": "^8.18.3"
   }
