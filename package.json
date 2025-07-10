@@ -1,0 +1,48 @@
+{
+  "name": "@service-broker/websocket",
+  "version": "1.0.0",
+  "description": "A WebSocket connection wrapper that exposes events as RxJS observables, allowing for idiomatic management of connection lifecycle",
+  "keywords": [
+    "websocket",
+    "websockets",
+    "socket",
+    "real-time",
+    "realtime",
+    "ws",
+    "rxjs",
+    "client-server",
+    "networking",
+    "javascript",
+    "nodejs",
+    "web-socket",
+    "communication",
+    "async",
+    "messaging"
+  ],
+  "homepage": "https://github.com/service-broker/websocket#readme",
+  "bugs": {
+    "url": "https://github.com/service-broker/websocket/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/service-broker/websocket.git"
+  },
+  "license": "MIT",
+  "author": "Hai Phan <hai.phan@gmail.com>",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "node dist/index.test.js"
+  },
+  "devDependencies": {
+    "@service-broker/test-utils": "^1.0.2",
+    "@types/node": "^24.0.12",
+    "@types/ws": "^8.18.1",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "rxjs": "^7.8.2",
+    "ws": "^8.18.3"
+  }
+}

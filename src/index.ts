@@ -1,0 +1,72 @@
+import { ClientRequestArgs, IncomingMessage } from "http"
+import * as rxjs from "rxjs"
+import { type ClientOptions, CloseEvent, ErrorEvent, MessageEvent, type ServerOptions, WebSocket, WebSocketServer } from "ws"
+
+export interface Connection {
+  request: IncomingMessage | {connectUrl: string}
+  message$: rxjs.Observable<MessageEvent>
+  error$: rxjs.Observable<ErrorEvent>
+  close$: rxjs.Observable<CloseEvent>
+  send: WebSocket['send']
+  close: WebSocket['close']
+  terminate: WebSocket['terminate']
+  keepAlive(interval: number, pingTimeout: number): rxjs.Observable<number>
+}
+
+export function makeServer(opts: ServerOptions) {
+  return rxjs.defer(() => {
+    const server = new WebSocketServer(opts)
+    return rxjs.fromEvent(server, 'listening').pipe(
+      rxjs.take(1),
+      rxjs.map(() => ({
+        connection$: rxjs.fromEvent(server, 'connection', (ws: WebSocket, req: IncomingMessage) => makeConnection(ws, req)),
+        error$: rxjs.fromEvent(server, 'error', (event: ErrorEvent) => event),
+        close$: rxjs.fromEvent(server, 'close', (event: CloseEvent) => event),
+        close: server.close.bind(server)
+      }))
+    )
+  })
+}
+
+export function connect(address: string | URL, options?: ClientOptions | ClientRequestArgs) {
+  return rxjs.defer(() => {
+    const ws = new WebSocket(address, options)
+    return rxjs.race(
+      rxjs.fromEvent(ws, 'error', (event: ErrorEvent) => event).pipe(
+        rxjs.map(event => { throw event.error })
+      ),
+      rxjs.fromEvent(ws, 'open').pipe(
+        rxjs.take(1),
+        rxjs.map(() => makeConnection(ws))
+      )
+    )
+  })
+}
+
+function makeConnection(ws: WebSocket, request?: IncomingMessage): Connection {
+  const close$ = rxjs.fromEvent(ws, 'close', (event: CloseEvent) => event)
+  return {
+    request: request ?? {connectUrl: ws.url},
+    message$: rxjs.fromEvent(ws, 'message', (event: MessageEvent) => event).pipe(
+      rxjs.takeUntil(close$)
+    ),
+    error$: rxjs.fromEvent(ws, 'error', (event: ErrorEvent) => event).pipe(
+      rxjs.takeUntil(close$)
+    ),
+    close$,
+    send: ws.send.bind(ws),
+    close: ws.close.bind(ws),
+    terminate: ws.terminate.bind(ws),
+    keepAlive: (interval, pingTimeout) => rxjs.interval(interval).pipe(
+      rxjs.exhaustMap(n => {
+        ws.ping(String(n))
+        return rxjs.fromEventPattern<Buffer>(h => ws.on('pong', h), h => ws.off('pong', h)).pipe(
+          rxjs.take(1),
+          rxjs.map(buf => Number(buf.toString())),
+          rxjs.timeout(pingTimeout)
+        )
+      }),
+      rxjs.takeUntil(close$)
+    )
+  }
+}
