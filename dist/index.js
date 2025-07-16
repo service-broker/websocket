@@ -18,19 +18,18 @@ export function connect(address, options) {
     });
 }
 function makeConnection(ws, request) {
-    const close$ = rxjs.fromEvent(ws, 'close', (event) => event);
     return {
         request: request ?? { connectUrl: ws.url },
-        message$: rxjs.fromEvent(ws, 'message', (event) => event).pipe(rxjs.takeUntil(close$)),
-        error$: rxjs.fromEvent(ws, 'error', (event) => event).pipe(rxjs.takeUntil(close$)),
-        close$,
+        message$: rxjs.fromEvent(ws, 'message', (event) => event),
+        error$: rxjs.fromEvent(ws, 'error', (event) => event),
+        close$: rxjs.fromEvent(ws, 'close', (event) => event),
         send: ws.send.bind(ws),
         close: ws.close.bind(ws),
         terminate: ws.terminate.bind(ws),
         keepAlive: (interval, pingTimeout) => rxjs.interval(interval).pipe(rxjs.exhaustMap(n => {
             ws.ping(String(n));
             return rxjs.fromEventPattern(h => ws.on('pong', h), h => ws.off('pong', h)).pipe(rxjs.take(1), rxjs.map(buf => Number(buf.toString())), rxjs.timeout(pingTimeout));
-        }), rxjs.takeUntil(close$))
+        }))
     };
 }
 //# sourceMappingURL=index.js.map

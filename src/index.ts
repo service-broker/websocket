@@ -44,16 +44,11 @@ export function connect(address: string | URL, options?: ClientOptions | ClientR
 }
 
 function makeConnection(ws: WebSocket, request?: IncomingMessage): Connection {
-  const close$ = rxjs.fromEvent(ws, 'close', (event: CloseEvent) => event)
   return {
     request: request ?? {connectUrl: ws.url},
-    message$: rxjs.fromEvent(ws, 'message', (event: MessageEvent) => event).pipe(
-      rxjs.takeUntil(close$)
-    ),
-    error$: rxjs.fromEvent(ws, 'error', (event: ErrorEvent) => event).pipe(
-      rxjs.takeUntil(close$)
-    ),
-    close$,
+    message$: rxjs.fromEvent(ws, 'message', (event: MessageEvent) => event),
+    error$: rxjs.fromEvent(ws, 'error', (event: ErrorEvent) => event),
+    close$: rxjs.fromEvent(ws, 'close', (event: CloseEvent) => event),
     send: ws.send.bind(ws),
     close: ws.close.bind(ws),
     terminate: ws.terminate.bind(ws),
@@ -65,8 +60,7 @@ function makeConnection(ws: WebSocket, request?: IncomingMessage): Connection {
           rxjs.map(buf => Number(buf.toString())),
           rxjs.timeout(pingTimeout)
         )
-      }),
-      rxjs.takeUntil(close$)
+      })
     )
   }
 }
